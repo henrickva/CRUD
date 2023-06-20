@@ -1,95 +1,116 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
+import {
+  Box,
+  Flex,
+  Button,
+  useDisclosure,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
+  useBreakpointValue,
+  Center,
+} from "@chakra-ui/react";
+import { useState,useEffect } from "react";
+import Modal from "../components/Modal";
 
-export default function Home() {
+export default function App() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [data, setData] = useState([]);
+  const [dataEdit, setDataEdit] = useState({});
+
+  const isMobile = useBreakpointValue({
+    base: true,
+    lg: false,
+  });
+
+  useEffect(() => {
+    const db_costumer = localStorage.getItem("cad_cliente")
+      ? JSON.parse(localStorage.getItem("cad_cliente"))
+      : [];
+
+    setData(db_costumer);
+  }, [setData]);
+
+  const handleRemove = (email) => {
+    const newArray = data.filter((item) => item.email !== email);
+
+    setData(newArray);
+
+    localStorage.setItem("cad_cliente", JSON.stringify(newArray));
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <Flex
+      h="100vh"
+      align="center"
+      justify="center"
+      fontSize="20px"
+    >
+      <Box maxW={800} w="100%" h="100vh" py={10} px={2}>
+        <Button colorScheme="facebook" onClick={() => [setDataEdit({}), onOpen()]}>
+          NOVO CADASTRO
+        </Button>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+        <Box overflowY="auto" height="100%">
+          <Table mt="6">
+            <Thead>
+              <Tr>
+                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                  Nome
+                </Th>
+                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                  Profissão
+                </Th>
+                <Th maxW={isMobile ? 5 : 100} fontSize="20px">
+                  E-Mail
+                </Th>
+                <Th p={0}></Th>
+                <Th p={0}></Th>
+                <Th p={0}></Th>
+                
+              </Tr>
+            </Thead>
+            <Tbody>
+              {data.map(({ name, job, email }, index) => (
+                <Tr key={index} cursor="pointer " _hover={{ bg: "gray.100" }}>
+                  <Td maxW={isMobile ? 5 : 100}>{name}</Td>
+                  <Td maxW={isMobile ? 5 : 100}>{job}</Td>
+                  <Td maxW={isMobile ? 5 : 100}>{email}</Td>
+                  <Td p={0}>
+                    <EditIcon
+                      fontSize={20}
+                      onClick={() => [
+                        setDataEdit({ name, job, email, index }),
+                        onOpen(),
+                      ]}
+                    />
+                  </Td>
+                  <Td p={0}>
+                    <DeleteIcon
+                      fontSize={20}
+                      onClick={() => handleRemove(email)}
+                    />
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
+      </Box>
+      {isOpen && (
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          data={data}
+          setData={setData}
+          dataEdit={dataEdit}
+          setDataEdit={setDataEdit}
         />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+      )}
+    </Flex>
+  );
+};
